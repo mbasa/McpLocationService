@@ -18,7 +18,7 @@ This Model Context Protocol (MCP) Server allows a LLM to call [pgGeocoder](http:
 {
     "mcpServers": {
       "LocationServices": {
-        "command": "<FULL Path>/java",
+        "command": "<FULL PATH>/java",
         "args": [
           "-Dspring.ai.mcp.server.stdio=true",
           "-Dspring.main.web-application-type=none",
