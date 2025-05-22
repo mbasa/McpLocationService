@@ -1,6 +1,6 @@
 # MCP Location Services for LLM
 
-This Model Context Protocol (MCP) Server allows a LLM to call [pgGeocoder](http://github.com/mbasa/pgGeocoder) Japanese Geocoder to `geocode` addresses as well as `reverse geocode` coordinates. It also allows the LLM to call [pgrServer](https://github.com/mbasa/pgrServer)(a fast Routing service) to return the `driving distance` between two coordinates after performing a Dijkstra shortest path search.   
+This Model Context Protocol (MCP) Server allows a LLM to call [pgGeocoder](http://github.com/mbasa/pgGeocoder) Japanese Geocoder to `geocode` addresses as well as `reverse geocode` coordinates. It also allows the LLM to call [pgrServer](https://github.com/mbasa/pgrServer)(a fast Routing service) to return the `driving distance` and the `path` between two coordinates after performing a Dijkstra shortest path search.   
 
 ### Installation
 
@@ -12,7 +12,7 @@ This Model Context Protocol (MCP) Server allows a LLM to call [pgGeocoder](http:
 
 * Integrate the MCP Service into Claude Desktop by going to Settings -> Developer -> Edit Config and open `claude_desktop_config.json` file in a text editor
 
-* Copy the text below and add the text into the json file
+* Copy the text below and paste into the json file
 
 ```json
 {
