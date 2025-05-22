@@ -30,6 +30,11 @@ public class McpLocationService {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
+    public record DriveTimeParams(
+            double source_lat, double source_lng, double target_lat, double target_lng) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record DriveRoute(@JsonProperty("properties") Props properties) {
 
         @JsonIgnoreProperties(ignoreUnknown = true)
@@ -61,21 +66,33 @@ public class McpLocationService {
     }
 
     @Tool(description = "Driving Distance in meters between two Latitude, Longitude coordinates")
-    public String drivingDistance(double source_lat, double source_lng, double target_lat, double target_lng) {
+    public String drivingDistance(DriveTimeParams drp) {
 
         DriveRoute dr = getRestClient().get().uri(
                 "/pgrServer/api/latlng/dijkstra?source_x={source_x}8&source_y={source_y}&target_x={target_x}&target_y={target_y}",
-                source_lng, source_lat, target_lng, target_lat)
+                drp.source_lng, drp.source_lat, drp.target_lng, drp.target_lat)
                 .retrieve().body(DriveRoute.class);
 
         return "{\"distance_in_meters\" : " + dr.properties().feat_length() + "}";
+    }
+
+    @Tool(description = "Shortest Path between two Latitude, Longitude coordinates")
+    public String shortestPath(DriveTimeParams drp) {
+
+        String retval = getRestClient().get().uri(
+                "/pgrServer/api/latlng/dijkstra?source_x={source_x}8&source_y={source_y}&target_x={target_x}&target_y={target_y}",
+                drp.source_lng, drp.source_lat, drp.target_lng, drp.target_lat)
+                .retrieve().body(String.class);
+
+        return retval;
     }
 
     public static void main(String[] args) {
         McpLocationService client = new McpLocationService();
         System.out.println(client.geocodeAddress("杉並区清水１−３−１４"));
         System.out.println(client.reverseGeocode(35.710788822, 139.620139631));
-        System.out.println(client.drivingDistance(35.689627, 139.691778, 35.608323, 140.105996));
+        System.out.println(client.drivingDistance(new DriveTimeParams(35.689627, 139.691778,
+                35.608323, 140.105996)));
     }
 
 }
