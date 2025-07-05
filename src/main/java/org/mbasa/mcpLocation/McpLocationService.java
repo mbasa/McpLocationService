@@ -47,7 +47,7 @@ public class McpLocationService {
                 }
         }
 
-        @Tool(description = "Japanese 500m Mesh Census data which will be searched a Latitude, Longitude coordinate parmaeter with a Radius in meters")
+        @Tool(description = "Japanese 500m Mesh Census data which will be searched from a Latitude, Longitude coordinate parmaeter with a Radius in meters")
         public String meshCensusData(
                         @ToolParam(description = "Latitude, Longitude coordinate parmaeter with a Radius in meters that will be used to search the Census Mesh Data") DrivePolyParams dPolyParams) {
 
@@ -55,6 +55,19 @@ public class McpLocationService {
 
                 return getRestClient().get()
                                 .uri("/CensusService/service/census/mesh4?geoJson={geoJson}", geoJson)
+                                .retrieve()
+                                .body(String.class);
+
+        }
+
+        @Tool(description = "POI data which will be searched from a Latitude, Longitude coordinate parmaeter with a Radius in meters")
+        public String poiData(
+                        @ToolParam(description = "Latitude, Longitude coordinate parmaeter with a Radius in meters that will be used to search the POI Data") DrivePolyParams dPolyParams) {
+
+                String geoJson = this.driveTimePolygon(dPolyParams);
+
+                return getRestClient().get()
+                                .uri("/CensusService/service/poi?geoJson={geoJson}", geoJson)
                                 .retrieve()
                                 .body(String.class);
 
