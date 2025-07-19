@@ -73,6 +73,19 @@ public class McpLocationService {
 
         }
 
+        @Tool(description = "People Flow (人流) data which will be searched from a Latitude, Longitude coordinate parmaeter with a Radius in meters")
+        public String peopleFlowData(
+                        @ToolParam(description = "Latitude, Longitude coordinate parmaeter with a Radius in meters that will be used to search the People Flow Data") DrivePolyParams dPolyParams) {
+
+                String geoJson = this.driveTimePolygon(dPolyParams);
+
+                return getRestClient().get()
+                                .uri("/CensusService/service/people_flow?geoJson={geoJson}", geoJson)
+                                .retrieve()
+                                .body(String.class);
+
+        }
+
         @Tool(description = "Geocode input Japanese address")
         public String geocodeAddress(@ToolParam(description = "Japanese address to be geocoded") String address) {
 
