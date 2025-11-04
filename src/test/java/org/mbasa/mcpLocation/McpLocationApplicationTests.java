@@ -5,6 +5,7 @@ import java.util.Map;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.transport.ServerParameters;
 import io.modelcontextprotocol.client.transport.StdioClientTransport;
+import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.ListToolsResult;
@@ -17,7 +18,8 @@ class McpLocationApplicationTests {
 				.args("-jar", "./target/mcpLocation.jar")
 				.build();
 
-		var transport = new StdioClientTransport(stdioParams);
+		var jsonMapper = McpJsonMapper.createDefault();
+		var transport = new StdioClientTransport(stdioParams, jsonMapper);
 		var client = McpClient.sync(transport).build();
 
 		client.initialize();
