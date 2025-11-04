@@ -2,7 +2,7 @@
 
 This Model Context Protocol (MCP) Server allows a LLM to call [pgGeocoder](http://github.com/mbasa/pgGeocoder) Japanese Geocoder to `geocode` addresses as well as `reverse geocode` coordinates. It also allows the LLM to call [pgrServer](https://github.com/mbasa/pgrServer)(a fast Routing service) to return the `driving distance` and the `path` between two coordinates after performing a Dijkstra shortest path search.   
 
-### Installation
+### MCP Integration with Claude Desktop
 
 * Download and install Claude AI Desktop
 
@@ -48,4 +48,19 @@ and
 
 ```text
 reverse geocode the Lat/Lng Coordinate 35.68125852, 139.773173143 and display the returned information
+```
+
+
+### Building the MCP Server
+
+To build the MCP Server from source, issue the maven command:
+
+```command-line
+mvn clean package
+```
+
+To run the MCP on a stand-alone mode, issue the maven command: 
+
+```command-line
+mvn spring-boot:run
 ```
