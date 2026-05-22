@@ -142,6 +142,23 @@ public class McpLocationService {
                                 .retrieve().body(String.class);
         }
 
+        @Tool(description = "Returns k alternative driving paths between two Latitude, Longitude coordinates as GeoJSON. Use this tool only when multiple paths are explicitly requested (i.e. more than one path).")
+        public String kShortestPath(
+                        @ToolParam(description = "Number of paths to return. Default is 3, maximum is 10.") int k,
+                        @ToolParam(description = "Latitude of the source/starting point") double source_lat,
+                        @ToolParam(description = "Longitude of the source/starting point") double source_lng,
+                        @ToolParam(description = "Latitude of the target/destination point") double target_lat,
+                        @ToolParam(description = "Longitude of the target/destination point") double target_lng) {
+
+                int paths = Math.min(Math.max(k < 1 ? 3 : k, 1), 10);
+                DriveDistParams drp = new DriveDistParams(source_lat, source_lng, target_lat, target_lng);
+
+                return getRestClient().get().uri(
+                                "/pgrServer/api/latlng/kShortestPath?source_x={source_x}&source_y={source_y}&target_x={target_x}&target_y={target_y}&k={k}",
+                                drp.source_lng(), drp.source_lat(), drp.target_lng(), drp.target_lat(), paths)
+                                .retrieve().body(String.class);
+        }
+
         @Tool(description = "Shortest path between two Latitude, Longitude coordinates")
         public String shortestPath(
                         @ToolParam(description = "Latitude of the source/starting point") double source_lat,
