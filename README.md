@@ -64,3 +64,7 @@ To run the MCP on a stand-alone mode, issue the maven command:
 ```command-line
 mvn spring-boot:run
 ```
+
+### Deploying to Tomcat
+
+This project builds as a WAR (`target/mcpLocation.war`) and requires an external servlet container. Since this project runs on Spring Boot 4, the container **must be Apache Tomcat 11 or later** (Jakarta EE 11 / Servlet 6.1). Deploying to Tomcat 10 or earlier will fail.
