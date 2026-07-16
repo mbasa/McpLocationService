@@ -2,11 +2,11 @@ package org.mbasa.mcpLocation;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.transport.ServerParameters;
 import io.modelcontextprotocol.client.transport.StdioClientTransport;
-import io.modelcontextprotocol.json.jackson.JacksonMcpJsonMapper;
+import io.modelcontextprotocol.json.jackson3.JacksonMcpJsonMapper;
+import tools.jackson.databind.json.JsonMapper;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.ListToolsResult;
@@ -19,7 +19,7 @@ class McpLocationApplicationTests {
 				.args("-jar", "./target/mcpLocation.jar")
 				.build();
 
-		var jsonMapper = new JacksonMcpJsonMapper(new ObjectMapper());
+		var jsonMapper = new JacksonMcpJsonMapper(JsonMapper.builder().build());
 		var transport = new StdioClientTransport(stdioParams, jsonMapper);
 		var client = McpClient.sync(transport).build();
 
