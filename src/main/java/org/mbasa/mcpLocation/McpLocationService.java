@@ -8,6 +8,11 @@ import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Service
 public class McpLocationService {
@@ -47,7 +52,7 @@ public class McpLocationService {
                 }
         }
 
-        @Tool(description = "Japanese 500m Mesh Census data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters")
+        @Tool(description = "Japanese 500m Mesh Census data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters. Returns CSV with a header row; the mesh polygon geometry is encoded as WKT in the WKT column.")
         public String meshCensusData(
                         @ToolParam(description = "Latitude of the center point") double latitude,
                         @ToolParam(description = "Longitude of the center point") double longitude,
@@ -55,10 +60,87 @@ public class McpLocationService {
 
                 String geoJson = this.driveTimePolygon(latitude, longitude, radius);
 
-                return getRestClient().get()
+                String featureCollection = getRestClient().get()
                                 .uri("/CensusService/service/census/mesh4?geoJson={geoJson}", geoJson)
                                 .retrieve()
                                 .body(String.class);
+
+                return geoJsonFeatureCollectionToCsv(featureCollection);
+        }
+
+        private String geoJsonFeatureCollectionToCsv(String featureCollectionJson) {
+                JsonNode root = new ObjectMapper().readTree(featureCollectionJson);
+                JsonNode features = root.get("features");
+                Set<String> propertyKeys = new LinkedHashSet<>();
+                for (JsonNode feature : features) {
+                        propertyKeys.addAll(feature.get("properties").propertyNames());
+                }
+
+                StringBuilder csv = new StringBuilder("WKT");
+                for (String key : propertyKeys) {
+                        csv.append(",").append(csvEscape(key));
+                }
+                csv.append("\n");
+
+                for (JsonNode feature : features) {
+                        csv.append(csvEscape(geometryToWkt(feature.get("geometry"))));
+                        JsonNode properties = feature.get("properties");
+                        for (String key : propertyKeys) {
+                                JsonNode value = properties.get(key);
+                                csv.append(",").append(value == null || value.isNull() ? "" : csvEscape(value.asText()));
+                        }
+                        csv.append("\n");
+                }
+
+                return csv.toString();
+        }
+
+        private String geometryToWkt(JsonNode geometry) {
+                String type = geometry.get("type").asText();
+                JsonNode coordinates = geometry.get("coordinates");
+
+                switch (type) {
+                        case "Polygon":
+                                return "POLYGON " + polygonRingsToWkt(coordinates);
+                        case "MultiPolygon":
+                                StringBuilder sb = new StringBuilder("MULTIPOLYGON (");
+                                for (int i = 0; i < coordinates.size(); i++) {
+                                        if (i > 0)
+                                                sb.append(", ");
+                                        sb.append(polygonRingsToWkt(coordinates.get(i)));
+                                }
+                                return sb.append(")").toString();
+                        default:
+                                throw new IllegalArgumentException("Unsupported geometry type: " + type);
+                }
+        }
+
+        private String polygonRingsToWkt(JsonNode rings) {
+                StringBuilder sb = new StringBuilder("(");
+                for (int i = 0; i < rings.size(); i++) {
+                        if (i > 0)
+                                sb.append(", ");
+                        sb.append(ringToWkt(rings.get(i)));
+                }
+                return sb.append(")").toString();
+        }
+
+        private String ringToWkt(JsonNode ring) {
+                StringBuilder sb = new StringBuilder("(");
+                for (int i = 0; i < ring.size(); i++) {
+                        if (i > 0)
+                                sb.append(", ");
+                        JsonNode point = ring.get(i);
+                        sb.append(point.get(0).asText()).append(" ").append(point.get(1).asText());
+                }
+                return sb.append(")").toString();
+        }
+
+        private String csvEscape(String value) {
+                if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+                        return "\"" + value.replace("\"", "\"\"") + "\"";
+                }
+                return value;
         }
 
         @Tool(description = "POI data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters")
