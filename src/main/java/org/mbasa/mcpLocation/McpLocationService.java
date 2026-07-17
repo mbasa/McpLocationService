@@ -100,6 +100,20 @@ public class McpLocationService {
                 JsonNode coordinates = geometry.get("coordinates");
 
                 switch (type) {
+                        case "Point":
+                                return "POINT (" + coordinates.get(0).asText() + " " + coordinates.get(1).asText() + ")";
+                        case "MultiPoint":
+                                return "MULTIPOINT " + ringToWkt(coordinates);
+                        case "LineString":
+                                return "LINESTRING " + ringToWkt(coordinates);
+                        case "MultiLineString":
+                                StringBuilder mls = new StringBuilder("MULTILINESTRING (");
+                                for (int i = 0; i < coordinates.size(); i++) {
+                                        if (i > 0)
+                                                mls.append(", ");
+                                        mls.append(ringToWkt(coordinates.get(i)));
+                                }
+                                return mls.append(")").toString();
                         case "Polygon":
                                 return "POLYGON " + polygonRingsToWkt(coordinates);
                         case "MultiPolygon":
@@ -143,7 +157,7 @@ public class McpLocationService {
                 return value;
         }
 
-        @Tool(description = "POI data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters")
+        @Tool(description = "POI data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters. Returns CSV with a header row; the geometry is encoded as WKT in the WKT column.")
         public String poiData(
                         @ToolParam(description = "Latitude of the center point") double latitude,
                         @ToolParam(description = "Longitude of the center point") double longitude,
@@ -151,13 +165,15 @@ public class McpLocationService {
 
                 String geoJson = this.driveTimePolygon(latitude, longitude, radius);
 
-                return getRestClient().get()
+                String featureCollection = getRestClient().get()
                                 .uri("/CensusService/service/poi?geoJson={geoJson}", geoJson)
                                 .retrieve()
                                 .body(String.class);
+
+                return geoJsonFeatureCollectionToCsv(featureCollection);
         }
 
-        @Tool(description = "People Flow (人流) data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters")
+        @Tool(description = "People Flow (人流) data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters. Returns CSV with a header row; the geometry is encoded as WKT in the WKT column.")
         public String peopleFlowData(
                         @ToolParam(description = "Latitude of the center point") double latitude,
                         @ToolParam(description = "Longitude of the center point") double longitude,
@@ -165,10 +181,12 @@ public class McpLocationService {
 
                 String geoJson = this.driveTimePolygon(latitude, longitude, radius);
 
-                return getRestClient().get()
+                String featureCollection = getRestClient().get()
                                 .uri("/CensusService/service/people_flow?geoJson={geoJson}", geoJson)
                                 .retrieve()
                                 .body(String.class);
+
+                return geoJsonFeatureCollectionToCsv(featureCollection);
         }
 
         @Tool(description = "Geocode input Japanese address")
