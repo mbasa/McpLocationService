@@ -52,7 +52,7 @@ public class McpLocationService {
                 }
         }
 
-        @Tool(description = "Japanese 500m Mesh Census data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters. Returns CSV with a header row; the mesh polygon geometry is encoded as WKT in the WKT column.")
+        @Tool(description = "Japanese 500m Mesh Census data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters. Returns CSV with a header row; the mesh polygon geometry is encoded as WKT in the WKT column. Returns the message \"No results found for the given search area.\" instead of CSV if no mesh matches the search area.")
         public String meshCensusData(
                         @ToolParam(description = "Latitude of the center point") double latitude,
                         @ToolParam(description = "Longitude of the center point") double longitude,
@@ -71,6 +71,10 @@ public class McpLocationService {
         private String geoJsonFeatureCollectionToCsv(String featureCollectionJson) {
                 JsonNode root = new ObjectMapper().readTree(featureCollectionJson);
                 JsonNode features = root.get("features");
+                if (features.isEmpty()) {
+                        return "No results found for the given search area.";
+                }
+
                 Set<String> propertyKeys = new LinkedHashSet<>();
                 for (JsonNode feature : features) {
                         propertyKeys.addAll(feature.get("properties").propertyNames());
@@ -157,7 +161,7 @@ public class McpLocationService {
                 return value;
         }
 
-        @Tool(description = "POI data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters. Returns CSV with a header row; the geometry is encoded as WKT in the WKT column.")
+        @Tool(description = "POI data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters. Returns CSV with a header row; the geometry is encoded as WKT in the WKT column. Returns the message \"No results found for the given search area.\" instead of CSV if no POIs are found in the search area.")
         public String poiData(
                         @ToolParam(description = "Latitude of the center point") double latitude,
                         @ToolParam(description = "Longitude of the center point") double longitude,
@@ -173,7 +177,7 @@ public class McpLocationService {
                 return geoJsonFeatureCollectionToCsv(featureCollection);
         }
 
-        @Tool(description = "People Flow (人流) data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters. Returns CSV with a header row; the geometry is encoded as WKT in the WKT column.")
+        @Tool(description = "People Flow (人流) data which will be searched from a Latitude, Longitude coordinate parameter with a Radius in meters. Returns CSV with a header row; the geometry is encoded as WKT in the WKT column. Returns the message \"No results found for the given search area.\" instead of CSV if no data is found in the search area.")
         public String peopleFlowData(
                         @ToolParam(description = "Latitude of the center point") double latitude,
                         @ToolParam(description = "Longitude of the center point") double longitude,
